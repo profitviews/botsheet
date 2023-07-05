@@ -3,6 +3,8 @@ import sqlite3
 
 
 class Trading(Link):
+	
+	
     def __init__(self):
         super().__init__()
 		logger.info("Completed super init")
@@ -13,7 +15,7 @@ class Trading(Link):
     def init_trading_db(self):
         self.cur = self.con.cursor()
 		logger.info("Created db cursor")
-        self.cur.execute("CREATE TABLE IF NOT EXISTS trades(exchange, symbol, price, side, time)")        
+        self.cur.execute("CREATE TABLE IF NOT EXISTS trades(src, sym, price, side, time)")        
         logger.info("Created db table")
 	
     def __del__(self):
@@ -22,19 +24,26 @@ class Trading(Link):
 
     def trade_update(self, src, sym, data):
         """Event: receive market trades from subscribed symbols"""
-        logger.info(f"Trade: {(src, sym, data['price'], data['side'])=}")
+        # logger.info(f"Trade: {(src, sym, data['price'], data['side'])=}")
         self.cur.execute("""
             INSERT INTO trades VALUES
             (?, ?, ?, ?, ?)
             """, (src, sym, data['price'], data['side'], data['time']))
         self.con.commit()
-        logger.info(f"Trade on {sym} recorded")
+        # logger.info(f"Trade on {sym} recorded")
 
     @http.route
     def get_latest_trades(self, data):
+		logger.info(f"{data=}")
 		logger.info("Getting latest trades")
         example_cur = self.con.cursor()
-        example_cur.execute("SELECT * from trades order by time desc limit 10")
+		where_clause = "where "
+		for i, (k, v) in enumerate(list(data.items())[:-1]):
+			if v:
+				where_clause = where_clause + (" and " if i else " ") + f"{k} = '{v}'"
+		statement = "SELECT * from trades " + where_clause + f" order by time desc limit {data['num'] or 10}"
+		logger.info(f"Select statement: {statement}")
+        example_cur.execute(statement)
         return example_cur.fetchall()
 
     @http.route
@@ -47,6 +56,6 @@ class Trading(Link):
     @http.route
     def get_reset_trades(self, data):
 		logger.info("Removing stored trades from the database")
-        self.con.cursor().execute("DELETE FROM trades;")
+        self.con.cursor().execute("DROP TABLE IF EXISTS trades;")
         self.con.commit()
         self.init_trading_db()

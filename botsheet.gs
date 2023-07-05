@@ -1,8 +1,8 @@
 const TOKEN = '6vwB3rsK59SxL1Mt0rkK';
 
-function clearTrades() {
+function test() {
   var bs = new BotSheet(TOKEN);
-  bs.clearTrades();
+  bs.getTrades();
 }
 
 function getTrades() {
@@ -10,29 +10,49 @@ function getTrades() {
   bs.getTrades();
 }
 
+function clearData() {
+  new BotSheet().clearData();
+}
+
 class BotSheet {
   constructor(token) {
+    this.ps = PropertiesService.getScriptProperties();
     if (token===undefined) 
-      this.token = PropertiesService.getScriptProperties().getProperty("TOKEN");
+      this.token = this.ps.getProperty("TOKEN");
     else {
       this.token = token;
-      PropertiesService.getScriptProperties().setProperty("TOKEN", token);
+      this.ps.setProperty("TOKEN", token);
     }
+    this.lines = +this.ps.getProperty("LINES");
+    this.ssheet = SpreadsheetApp.getActiveSpreadsheet();
+    this.readCells();
   }
 
-  clearTrades() {
-    this.clearRange(2, 1, 10, 5);
+  readCells() {
+    this.cells = this.ssheet.getRange('I6:L7').getValues();
   }
 
   getTrades() {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-    var range = sheet.getRange('A2:E11');
+    var payload = 'latest_trades';
+    for (var i = 0; i < this.cells[0].length; i = i + 1) {
+      payload = payload + (i ? '&':'?') + this.cells[0][i] + '=' + this.cells[1][i];
+    }
+    var data = this.get_profitview(payload);
+    if (data.length == 0) return;
+    var sheet = this.ssheet.getSheets()[0];
+    var range = sheet.getRange(2, 1, data.length, 5);
     SpreadsheetApp.setActiveRange(range);
-    range.setValues(this.get_profitview('latest_trades'));
+    range.setValues(data);
+    this.lines = data.length;
+    this.ps.setProperty("LINES", data.length);
+  }
+
+  clearData() {
+    this.get_profitview('reset_trades');
+    this.clearRange(2, 1, this.lines || 10, 5)
   }
 
   get_profitview(action) {
-
     var payload = this.token + '/' + action;
     var url = "https://profitview.net/trading/bot/" + payload;
 
@@ -44,10 +64,11 @@ class BotSheet {
     return response.data;
   }
 
-  clearRange(row, column, width, height) {
+  clearRange(row, column, height, width) {
     var sheet = SpreadsheetApp.getActive().getActiveSheet();
-    var range = sheet.getRange(row, column, width, height);
+    var range = sheet.getRange(row, column, height, width);
     range.clearContent();
     return "Success";
   }
+
 };
