@@ -1,13 +1,5 @@
-const TOKEN = '6vwB3rsK59SxL1Mt0rkK';
-
-function test() {
-  var bs = new BotSheet(TOKEN);
-  bs.getTrades();
-}
-
 function getTrades() {
-  var bs = new BotSheet(TOKEN);
-  bs.getTrades();
+  new BotSheet().getTrades();
 }
 
 function clearData() {
@@ -15,27 +7,20 @@ function clearData() {
 }
 
 class BotSheet {
-  constructor(token) {
+  constructor() {
     this.ps = PropertiesService.getScriptProperties();
-    if (token===undefined) 
-      this.token = this.ps.getProperty("TOKEN");
-    else {
-      this.token = token;
-      this.ps.setProperty("TOKEN", token);
-    }
-    this.lines = +this.ps.getProperty("LINES");
     this.ssheet = SpreadsheetApp.getActiveSpreadsheet();
-    this.readCells();
-  }
 
-  readCells() {
-    this.cells = this.ssheet.getRange('I6:L7').getValues();
+    this.token = this.ssheet.getRange('H2').getValue();
+
+    this.lines = +this.ps.getProperty("LINES");
+    this.params = this.ssheet.getRange('I6:L7').getValues();
   }
 
   getTrades() {
     var payload = 'latest_trades';
-    for (var i = 0; i < this.cells[0].length; i = i + 1) {
-      payload = payload + (i ? '&':'?') + this.cells[0][i] + '=' + this.cells[1][i];
+    for (var i = 0; i < this.params[0].length; i = i + 1) {
+      payload = payload + (i ? '&':'?') + this.params[0][i] + '=' + this.params[1][i];
     }
     var data = this.get_profitview(payload);
     if (data.length == 0) return;
@@ -55,12 +40,8 @@ class BotSheet {
   get_profitview(action) {
     var payload = this.token + '/' + action;
     var url = "https://profitview.net/trading/bot/" + payload;
-
-    try {
-      var fetched = UrlFetchApp.fetch(url);
-      var response = JSON.parse(fetched);      
-    }
-    catch(error) { return error}
+    var fetched = UrlFetchApp.fetch(url);
+    var response = JSON.parse(fetched);      
     return response.data;
   }
 
@@ -68,7 +49,6 @@ class BotSheet {
     var sheet = SpreadsheetApp.getActive().getActiveSheet();
     var range = sheet.getRange(row, column, height, width);
     range.clearContent();
-    return "Success";
   }
 
 };
