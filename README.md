@@ -18,7 +18,7 @@ In order to use this code you must [Sign-up with ProfitView](https://profitview.
    4. **NOTE** you might have to create the buttons (they may not appear on upload of the XLSX file)
       1. Insert>Drawing
       2. Shape toolbar item and choose rounded rectangle
-      3. Create a button-like rectangle and add text e.g. "Clear"
+      3. Create a button-like rectangle and add text e.g. "Clear" and choose colors etc
       4. Save and Close
       5. Right-click and position the button
       6. Repeat for other buttons
