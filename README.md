@@ -15,6 +15,13 @@ In order to use this code you must [Sign-up with ProfitView](https://profitview.
    1. Choose "Blank"
    2. File>Import>Upload>Browse and choose [`BotSheet.xlsx`](BotSheet.xlsx) from the `botsheet` directory you just cloned.
    3. Paste your token from above into cell `H2`
+   4. **NOTE** you might have to create the buttons (they may not appear on upload of the XLSX file)
+      1. Insert>Drawing
+      2. Shape toolbar item and choose rounded rectangle
+      3. Create a button-like rectangle and add text e.g. "Clear" and choose colors etc
+      4. Save and Close
+      5. Right-click and position the button
+      6. Repeat for other buttons
 5. In the sheet's menus go to Extensions>Apps Script
    1. Open and copy all of [`botsheet.gs`](botsheet.gs) from the (recently cloned) `botsheet` directory and paste it into the Apps Script code window so that it replaces any text there.
    2. Replace "Untitled project" with "BotSheet" (or similar) for the name of the project.
