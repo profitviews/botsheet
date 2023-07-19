@@ -6,6 +6,8 @@ function clearData() {
   new BotSheet().clearData();
 }
 
+const BOT_URL = "https://profitview.net/trading/bot/";
+
 class BotSheet {
   constructor() {
     this.ps = PropertiesService.getScriptProperties();
@@ -39,7 +41,7 @@ class BotSheet {
 
   get_profitview(action) {
     var payload = this.token + '/' + action;
-    var url = "https://profitview.net/trading/bot/" + payload;
+    var url = BOT_URL + payload;
     var fetched = UrlFetchApp.fetch(url);
     var response = JSON.parse(fetched);      
     return response.data;
